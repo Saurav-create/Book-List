@@ -1,7 +1,7 @@
 //get the elements
 
 let form = document.querySelector('#book-form');
-
+let bookList = document.querySelector('#book-list');
 
 
 
@@ -20,11 +20,9 @@ class Book {
 
 
 class UI {
-    constructor() {
 
-    }
 
-    addToBookList(book) {
+    static addToBookList(book) {
         let list = document.querySelector("#book-list");
         let row = document.createElement('tr');
 
@@ -35,11 +33,11 @@ class UI {
 
         list.appendChild(row);
 
-
+    
 
     }
 
-    clearfields() {
+   static clearfields() {
         document.querySelector('#title').value = "";
         document.querySelector('#author').value = "";
         document.querySelector('#isbn').value = "";
@@ -48,28 +46,108 @@ class UI {
 
     }
 
-   showalert(message,className){
+    static showalert(message, className) {
 
-    let div = document.createElement('div');
+        let div = document.createElement('div');
 
-    div.className = `alert ${className}`;
-    div.appendChild(document.createTextNode(message));
-  console.log(div);
-     let container = document.querySelector(".container");
+        div.className = `alert ${className}`;
+        div.appendChild(document.createTextNode(message));
+        let container = document.querySelector(".container");
 
-     container.insertBefore(div,form);
-
+        container.insertBefore(div, form);
 
 
 
-     setTimeout(()=>{
-        
+
+         setTimeout(() => {
+
             document.querySelector(".alert").remove();
-        
-     },1500);
+
+        }, 1500);
     }
 
 
+//    static deleteFromBook(target) {
+//          if(target.hasAttribute('href')){
+
+//             target.parentElement.parentElement.remove();
+//             Store.removeBook(target.parentElement.previousElementSibling.textContent.trim());
+//             UI.showalert('Book Removed',"success");
+//          }
+    
+    
+//     }
+
+  
+
+}
+
+
+// Local Storage class
+
+
+class Store{
+
+    static getBooks(){
+
+        let books;
+        
+        if(localStorage.getItem('books') === null){
+   
+           books = [];
+   
+        }
+   
+   
+        else{
+            books = JSON.parse(localStorage.getItem('books'));
+        }
+   console.log(books.length);
+    return books;
+   
+       }
+   
+
+
+
+       static addBook(book){
+        let books = Store.getBooks();
+
+        books.push(book);
+
+        localStorage.setItem('books',JSON.stringify(books));
+            
+       }
+
+       static displayBooks(){
+          let books = Store.getBooks();
+
+          books.forEach(book =>{
+            UI.addToBookList(book);
+          });
+
+       }
+
+
+
+       static removeBook(isbn){
+       let books = Store.getBooks();
+    //    console.log(books);
+
+       books.forEach((book,index) =>{
+            if(book.isbn === isbn){
+                books.splice('index',1);
+            }
+        localStorage.setItem('books',JSON.stringify('books'));
+
+       });
+
+
+
+
+
+
+       }
 }
 
 
@@ -77,7 +155,13 @@ class UI {
 
 
 //add  event listener
+
+
 form.addEventListener('submit', newBook);
+
+bookList.addEventListener('click', removeBook);
+
+document.addEventListener('DOMContentLoaded',Store.displayBooks());
 
 
 
@@ -91,26 +175,35 @@ function newBook(e) {
         author = document.querySelector('#author').value,
         isbn = document.querySelector('#isbn').value;
 
-        let ui = new UI();
+    
 
-    if (title === '' || author === '' || isbn === '' ) {
-     ui.showalert("Please fill all the fields!","error");
-     
+    if (title === '' || author === '' || isbn === '') {
+        UI.showalert("Please fill all the fields!", "error");
+
     }
 
-      else {
+    else {
 
 
 
         let book = new Book(title, author, isbn);
-       
 
-        ui.addToBookList(book);
-        ui.clearfields();
-    ui.showalert("Book Added","success");
+
+        UI.addToBookList(book);
+        UI.clearfields();
+        UI.showalert("Book Added", "success");
+        Store.addBook(book);
 
 
     }
-
     e.preventDefault();
+}
+
+
+function removeBook(e) {
+
+    UI.deleteFromBook(e.target);
+    
+    e.preventDefault();
+
 }
